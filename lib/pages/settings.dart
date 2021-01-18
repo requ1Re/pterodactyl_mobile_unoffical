@@ -27,70 +27,68 @@ class _SettingsPageState extends State<SettingsPage> {
     });
 
     return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),
-        child: Container(
-          child: Column(
-            children: [
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 50),
-                child: Text("Settings", style: TextStyle(fontSize: 38)),
+      child: Container(
+        child: ListView(
+          padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 50),
+              child: Text("Settings", style: TextStyle(fontSize: 38), textAlign: TextAlign.center),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10),
+              child: Text("App Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+            ),
+            buildSettingCard(DynamicTheme.of(context).brightness == Brightness.light ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon, "Theme", DropdownButton(
+              isExpanded: true,
+              hint: Text('Theme'),
+              value: _selectedTheme,
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedTheme = newValue;
+                  if(newValue == _themes[0]){
+                    DynamicTheme.of(context).setBrightness(Brightness.light);
+                  }else if(newValue == _themes[1]){
+                    DynamicTheme.of(context).setBrightness(Brightness.dark);
+                  }
+                });
+              },
+              items: _themes.map((location) {
+                return DropdownMenuItem(
+                  child: new Text(location),
+                  value: location,
+                );
+              }).toList(),
+            )),
+            Container(
+              margin: EdgeInsets.only(top: 30, bottom: 10),
+              child: Text("Pterodactyl Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+            ),
+            buildSettingCard(FontAwesomeIcons.link, "Panel URL", TextField(
+              controller: _pterodactylUrlController,
+              textAlign: TextAlign.right,
+              onChanged: (text) async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.setString("pterodactyl_url", _pterodactylUrlController.text);
+              },
+              decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "Panel URL"
               ),
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 10),
-                child: Text("App Settings", style: TextStyle(fontSize: 24)),
+            )),
+            buildSettingCard(FontAwesomeIcons.key, "API Key", TextField(
+              controller: _pterodactylApiKeyController,
+              textAlign: TextAlign.right,
+              onChanged: (text) async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.setString("pterodactyl_apikey", _pterodactylApiKeyController.text);
+              },
+              decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "API Key"
               ),
-              buildSettingCard(DynamicTheme.of(context).brightness == Brightness.light ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon, "Theme", DropdownButton(
-                isExpanded: true,
-                hint: Text('Theme'),
-                value: _selectedTheme,
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedTheme = newValue;
-                    if(newValue == _themes[0]){
-                      DynamicTheme.of(context).setBrightness(Brightness.light);
-                    }else if(newValue == _themes[1]){
-                      DynamicTheme.of(context).setBrightness(Brightness.dark);
-                    }
-                  });
-                },
-                items: _themes.map((location) {
-                  return DropdownMenuItem(
-                    child: new Text(location),
-                    value: location,
-                  );
-                }).toList(),
-              )),
-              Container(
-                margin: EdgeInsets.only(top: 30, bottom: 10),
-                child: Text("Pterodactyl Settings", style: TextStyle(fontSize: 24)),
-              ),
-              buildSettingCard(FontAwesomeIcons.link, "Panel URL", TextField(
-                controller: _pterodactylUrlController,
-                textAlign: TextAlign.right,
-                onChanged: (text) async {
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.setString("pterodactyl_url", _pterodactylUrlController.text);
-                },
-                decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "Panel URL"
-                ),
-              )),
-              buildSettingCard(FontAwesomeIcons.key, "API Key", TextField(
-                controller: _pterodactylApiKeyController,
-                textAlign: TextAlign.right,
-                onChanged: (text) async {
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.setString("pterodactyl_apikey", _pterodactylApiKeyController.text);
-                },
-                decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "API Key"
-                ),
-              )),
-            ],
-          ),
+            )),
+          ],
         ),
       ),
     );
