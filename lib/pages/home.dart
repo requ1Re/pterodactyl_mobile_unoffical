@@ -37,11 +37,8 @@ class _HomePageState extends State<HomePage> {
               ),
               Visibility(
                 visible: showApiKeyError,
-                child: CustomCard(
-                  child: ErrorCard(
-                      errorText: "No Panel URL or API Key found. Please set your Pterodactyl Panel URL and API Key in the settings."
-                  ),
-                  backgroundColor: Colors.redAccent,
+                child: ErrorCard(
+                    errorText: "No Panel URL or API Key found. Please set your Pterodactyl Panel URL and API Key in the settings."
                 )
               )
             ],

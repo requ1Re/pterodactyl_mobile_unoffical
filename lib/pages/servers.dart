@@ -106,107 +106,113 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
         backgroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
       ),
       body: Center(
-        child: ListView(
-          padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),
-          children: [
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 50),
-              child: Text("Servers", textAlign: TextAlign.center, style: TextStyle(fontSize: 38)),
-            ),
-            Visibility(
-                visible: showApiKeyError,
-                child: ErrorCard(
-                    errorText: "No Panel URL or API Key found. Please set your Pterodactyl Panel URL and API Key in the settings."
-                )
-            ),
-            FutureBuilder<ServerList>(
-              future: _serverList, // async work
-              builder: (BuildContext context, AsyncSnapshot<ServerList> snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting: return FaIcon(FontAwesomeIcons.spinner);
-                  default:
-                    if (snapshot.hasError) {
-                      return ErrorCard(
-                          errorTitle: 'Could not load servers:',
-                          errorText: '${snapshot.error}'
-                      );
-                    } else {
-                      return Column(
-                        children: snapshot.data.data.map((server) => CustomCard(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 5),
-                              child: Row(
-                                children: [
-                                  Padding(
-                                      padding: EdgeInsets.only(right: 15),
-                                      child: _getStatusDot(server.resources.attributes.currentState)
-                                  ),
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        Text(server.attributes.name, textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                        Wrap(
-                                          spacing: 8,
-                                          runSpacing: 4,
-                                          children: [
-                                            CustomCard(
-                                              child: Padding(
-                                                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                                                child: Column(
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        FaIcon(FontAwesomeIcons.memory, size: 16),
-                                                        Padding(
-                                                          padding: EdgeInsets.only(left: 5),
-                                                          child: Text(_formatBytesString(server.resources.attributes.resources.memoryBytes.toString()) +
-                                                              "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.memory)), maxLines: 2),
-                                                        )
-                                                      ],
-                                                    ),
-                                                    Divider(),
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        FaIcon(FontAwesomeIcons.hdd, size: 16),
-                                                        Padding(
-                                                          padding: EdgeInsets.only(left: 5),
-                                                          child: Text(_formatBytesString(server.resources.attributes.resources.diskBytes.toString()) +
-                                                              "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.disk)), maxLines: 2),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Divider(),
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        FaIcon(FontAwesomeIcons.microchip, size: 16),
-                                                        Padding(
-                                                          padding: EdgeInsets.only(left: 5),
-                                                          child: Text(server.resources.attributes.resources.cpuAbsolute.toStringAsFixed(2) + "%", maxLines: 2),
-                                                        ),
-                                                      ],
-                                                    )
-                                                  ],
+        child: NestedScrollView (
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: MyDynamicHeader(),
+              ),
+            ];
+          },
+          body: ListView(
+            padding: EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 0),
+            children: [
+              Visibility(
+                  visible: showApiKeyError,
+                  child: ErrorCard(
+                      errorText: "No Panel URL or API Key found. Please set your Pterodactyl Panel URL and API Key in the settings."
+                  )
+              ),
+              FutureBuilder<ServerList>(
+                future: _serverList, // async work
+                builder: (BuildContext context, AsyncSnapshot<ServerList> snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting: return FaIcon(FontAwesomeIcons.spinner);
+                    default:
+                      if (snapshot.hasError) {
+                        return ErrorCard(
+                            errorTitle: 'Could not load servers:',
+                            errorText: '${snapshot.error}'
+                        );
+                      } else {
+                        return Column(
+                          children: snapshot.data.data.map((server) => CustomCard(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 5),
+                                child: Row(
+                                  children: [
+                                    Padding(
+                                        padding: EdgeInsets.only(right: 15),
+                                        child: _getStatusDot(server.resources.attributes.currentState)
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        children: [
+                                          Text(server.attributes.name, textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                          Wrap(
+                                            spacing: 8,
+                                            runSpacing: 4,
+                                            children: [
+                                              CustomCard(
+                                                child: Padding(
+                                                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                                                  child: Column(
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          FaIcon(FontAwesomeIcons.memory, size: 16),
+                                                          Padding(
+                                                            padding: EdgeInsets.only(left: 5),
+                                                            child: Text(_formatBytesString(server.resources.attributes.resources.memoryBytes.toString()) +
+                                                                "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.memory)), maxLines: 2),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      Divider(),
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          FaIcon(FontAwesomeIcons.hdd, size: 16),
+                                                          Padding(
+                                                            padding: EdgeInsets.only(left: 5),
+                                                            child: Text(_formatBytesString(server.resources.attributes.resources.diskBytes.toString()) +
+                                                                "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.disk)), maxLines: 2),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Divider(),
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          FaIcon(FontAwesomeIcons.microchip, size: 16),
+                                                          Padding(
+                                                            padding: EdgeInsets.only(left: 5),
+                                                            child: Text(server.resources.attributes.resources.cpuAbsolute.toStringAsFixed(2) + "%", maxLines: 2),
+                                                          ),
+                                                        ],
+                                                      )
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
-                            )
-                        )).toList(),
-                      );
-                    }
-                }
-              },
-            )
-          ],
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              )
+                          )).toList(),
+                        );
+                      }
+                  }
+                },
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -241,4 +247,45 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
 
   @override
   bool get wantKeepAlive => true;
+}
+
+class MyDynamicHeader extends SliverPersistentHeaderDelegate {
+  int index = 0;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return LayoutBuilder(
+        builder: (context, constraints) {
+          final double percentage = (constraints.maxHeight - minExtent)/(maxExtent - minExtent);
+
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).canvasColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).shadowColor.withOpacity(0.25),
+                  spreadRadius: 3 * (1 - percentage),
+                  blurRadius: 6 * (1 - percentage),
+                ),
+              ],
+            ),
+            height: constraints.maxHeight,
+            child: SafeArea(
+                child: Center(
+                  child: Text("Servers", textAlign: TextAlign.center, style: TextStyle(fontSize: 38)),
+                )
+            ),
+          );
+        }
+    );
+  }
+
+  @override
+  bool shouldRebuild(SliverPersistentHeaderDelegate _) => true;
+
+  @override
+  double get maxExtent => 200.0;
+
+  @override
+  double get minExtent => 100.0;
 }
