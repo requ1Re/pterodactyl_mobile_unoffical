@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:package_info/package_info.dart';
 import 'package:pterodactyl_mobile/widgets/CustomCard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,6 +14,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   List<String> _themes = ['Light', 'Dark'];
   String _selectedTheme;
+
+  String _appVersionText = "";
 
   final _pterodactylApiKeyController = TextEditingController();
   final _pterodactylUrlController = TextEditingController();
@@ -26,6 +29,16 @@ class _SettingsPageState extends State<SettingsPage> {
       _pterodactylUrlController.text = prefs.getString("pterodactyl_url") ?? "";
     });
 
+    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+      String appName = packageInfo.appName;
+      String version = packageInfo.version;
+      String buildNumber = packageInfo.buildNumber;
+
+      setState(() {
+        _appVersionText = appName + " v" + version + " (Build " + buildNumber + ")";
+      });
+    });
+
     return Center(
       child: Container(
         child: ListView(
@@ -37,31 +50,6 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             Container(
               margin: EdgeInsets.symmetric(vertical: 10),
-              child: Text("App Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
-            ),
-            buildSettingCard(DynamicTheme.of(context).brightness == Brightness.light ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon, "Theme", DropdownButton(
-              isExpanded: true,
-              hint: Text('Theme'),
-              value: _selectedTheme,
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedTheme = newValue;
-                  if(newValue == _themes[0]){
-                    DynamicTheme.of(context).setBrightness(Brightness.light);
-                  }else if(newValue == _themes[1]){
-                    DynamicTheme.of(context).setBrightness(Brightness.dark);
-                  }
-                });
-              },
-              items: _themes.map((location) {
-                return DropdownMenuItem(
-                  child: new Text(location),
-                  value: location,
-                );
-              }).toList(),
-            )),
-            Container(
-              margin: EdgeInsets.only(top: 30, bottom: 10),
               child: Text("Pterodactyl Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
             ),
             buildSettingCard(FontAwesomeIcons.link, "Panel URL", TextField(
@@ -88,6 +76,32 @@ class _SettingsPageState extends State<SettingsPage> {
                   hintText: "API Key"
               ),
             )),
+            Container(
+              margin: EdgeInsets.only(top: 30, bottom: 10),
+              child: Text("App Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+            ),
+            buildSettingCard(DynamicTheme.of(context).brightness == Brightness.light ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon, "Theme", DropdownButton(
+              isExpanded: true,
+              hint: Text('Theme'),
+              value: _selectedTheme,
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedTheme = newValue;
+                  if(newValue == _themes[0]){
+                    DynamicTheme.of(context).setBrightness(Brightness.light);
+                  }else if(newValue == _themes[1]){
+                    DynamicTheme.of(context).setBrightness(Brightness.dark);
+                  }
+                });
+              },
+              items: _themes.map((location) {
+                return DropdownMenuItem(
+                  child: new Text(location),
+                  value: location,
+                );
+              }).toList(),
+            )),
+            Text(_appVersionText, textAlign: TextAlign.center)
           ],
         ),
       ),
@@ -103,15 +117,18 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget buildSettingCard(IconData icon, String caption, Widget settingWidget){
     return CustomCard(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+          padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
           child: Row(
             children: [
               Padding(
                 padding: EdgeInsets.only(right: 10),
                 child: FaIcon(icon, size: 20),
               ),
-              Expanded(child: Text(caption, style: TextStyle(fontSize: 18))),
-              Expanded(child: settingWidget),
+              Text(caption, style: TextStyle(fontSize: 16)),
+              Expanded(child: Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: settingWidget,
+              )),
             ],
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.start,
