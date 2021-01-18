@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:pterodactyl_mobile/widgets/CustomCard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -13,9 +14,15 @@ class _SettingsPageState extends State<SettingsPage> {
   List<String> _themes = ['Light', 'Dark'];
   String _selectedTheme;
 
+  final _apiKeyController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     _selectedTheme = Theme.of(context).brightness == Brightness.light ? _themes[0]: _themes[1];
+
+    SharedPreferences.getInstance().then((prefs) {
+      _apiKeyController.text = prefs.getString("pterodactyl_apikey") ?? "";
+    });
 
     return Center(
       child: Padding(
@@ -53,10 +60,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 }).toList(),
               )),
               Container(
-                margin: EdgeInsets.symmetric(vertical: 10),
+                margin: EdgeInsets.only(top: 30, bottom: 10),
                 child: Text("Pterodactyl Settings", style: TextStyle(fontSize: 24)),
               ),
               buildSettingCard(FontAwesomeIcons.key, "API Key", TextField(
+                controller: _apiKeyController,
+                textAlign: TextAlign.right,
+                onChanged: (text) async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.setString("pterodactyl_apikey", _apiKeyController.text);
+                },
                 decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: "API Key"
@@ -67,6 +80,12 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _apiKeyController.dispose();
+    super.dispose();
   }
 
   Widget buildSettingCard(IconData icon, String caption, Widget settingWidget){

@@ -24,6 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   font_awesome_flutter: 8.11.0
+  shared_preferences: '>=0.5.12+4 <2.0.0'
   dynamic_theme: ^1.0.1
 
 
