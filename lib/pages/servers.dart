@@ -38,7 +38,11 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
     );
     if (response.statusCode == 200) {
       final responseJson = jsonDecode(response.body);
-      return ServerList.fromJson(responseJson);
+      ServerList serverList = ServerList.fromJson(responseJson);
+      for(Server s in serverList.data){
+        s.resources = await fetchServerResources(s.attributes.identifier);
+      }
+      return serverList;
     } else {
       switch(response.statusCode){
         case 404:
@@ -98,71 +102,141 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
             _serverList = fetchServerList();
           });
         },
-        child: Icon(Icons.refresh, color: Theme.of(context).colorScheme.primary),
-        backgroundColor: Theme.of(context).cardColor,
+        child: Icon(Icons.refresh),
+        backgroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
       ),
       body: Center(
-        child: Padding(
+        child: ListView(
           padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),
-          child: Container(
-            child: Column(
-              children: [
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 50),
-                  child: Text("Servers", style: TextStyle(fontSize: 38)),
-                ),
-                Visibility(
-                    visible: showApiKeyError,
-                    child: ErrorCard(
-                        errorText: "No Panel URL or API Key found. Please set your Pterodactyl Panel URL and API Key in the settings."
-                    )
-                ),
-                FutureBuilder<ServerList>(
-                  future: _serverList, // async work
-                  builder: (BuildContext context, AsyncSnapshot<ServerList> snapshot) {
-                    switch (snapshot.connectionState) {
-                      case ConnectionState.waiting: return FaIcon(FontAwesomeIcons.spinner);
-                      default:
-                        if (snapshot.hasError) {
-                          return ErrorCard(
-                              errorTitle: 'Could not load servers:',
-                              errorText: '${snapshot.error}'
-                          );
-                        } else {
-                          return Column(
-                            children: snapshot.data.data.map((server) => CustomCard(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                                child: Row(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 15),
-                                      child: FaIcon(FontAwesomeIcons.circle, color: Colors.red),
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        children: [
-                                          Text(server.attributes.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                        ],
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              )
-                            )).toList(),
-                          );
-                        }
-                    }
-                  },
-                )
-              ],
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 50),
+              child: Text("Servers", textAlign: TextAlign.center, style: TextStyle(fontSize: 38)),
             ),
-          ),
+            Visibility(
+                visible: showApiKeyError,
+                child: ErrorCard(
+                    errorText: "No Panel URL or API Key found. Please set your Pterodactyl Panel URL and API Key in the settings."
+                )
+            ),
+            FutureBuilder<ServerList>(
+              future: _serverList, // async work
+              builder: (BuildContext context, AsyncSnapshot<ServerList> snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting: return FaIcon(FontAwesomeIcons.spinner);
+                  default:
+                    if (snapshot.hasError) {
+                      return ErrorCard(
+                          errorTitle: 'Could not load servers:',
+                          errorText: '${snapshot.error}'
+                      );
+                    } else {
+                      return Column(
+                        children: snapshot.data.data.map((server) => CustomCard(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 5),
+                              child: Row(
+                                children: [
+                                  Padding(
+                                      padding: EdgeInsets.only(right: 15),
+                                      child: _getStatusDot(server.resources.attributes.currentState)
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        Text(server.attributes.name, textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 4,
+                                          children: [
+                                            CustomCard(
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                                                child: Column(
+                                                  children: [
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        FaIcon(FontAwesomeIcons.memory, size: 16),
+                                                        Padding(
+                                                          padding: EdgeInsets.only(left: 5),
+                                                          child: Text(_formatBytesString(server.resources.attributes.resources.memoryBytes.toString()) +
+                                                              "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.memory)), maxLines: 2),
+                                                        )
+                                                      ],
+                                                    ),
+                                                    Divider(),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        FaIcon(FontAwesomeIcons.hdd, size: 16),
+                                                        Padding(
+                                                          padding: EdgeInsets.only(left: 5),
+                                                          child: Text(_formatBytesString(server.resources.attributes.resources.diskBytes.toString()) +
+                                                              "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.disk)), maxLines: 2),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Divider(),
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        FaIcon(FontAwesomeIcons.microchip, size: 16),
+                                                        Padding(
+                                                          padding: EdgeInsets.only(left: 5),
+                                                          child: Text(server.resources.attributes.resources.cpuAbsolute.toStringAsFixed(2) + "%", maxLines: 2),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )
+                        )).toList(),
+                      );
+                    }
+                }
+              },
+            )
+          ],
         ),
       ),
     );
+  }
+
+  Widget _getStatusDot(String status){
+    switch(status){
+      case "offline":
+        return FaIcon(FontAwesomeIcons.circle, color: Colors.red);
+      case "starting":
+        return FaIcon(FontAwesomeIcons.circle, color: Colors.yellow);
+      case "running":
+        return FaIcon(FontAwesomeIcons.solidCircle, color: Colors.green);
+      default:
+        return FaIcon(FontAwesomeIcons.questionCircle, color: Colors.yellow);
+    }
+  }
+
+  String _megabytesToBytes(int megabytes){
+    return (megabytes * 1024 * 1024).round().toString();
+  }
+  String _formatBytesString(String bytes){
+    int _bytes = int.parse(bytes);
+    double _megabytes = (_bytes / 1024 / 1024);
+
+    if(_megabytes >= 1000){
+      return (_megabytes / 1024).toStringAsFixed(2) + " GB";
+    }else{
+      return _megabytes.toStringAsFixed(2) + " MB";
+    }
   }
 
   @override

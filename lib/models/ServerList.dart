@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:pterodactyl_mobile/models/ServerResources.dart';
+
 ServerList serverListFromJson(String str) => ServerList.fromJson(json.decode(str));
 
 String serverListToJson(ServerList data) => json.encode(data.toJson());
@@ -40,6 +42,7 @@ class Server {
 
   String object;
   ServerAttributes attributes;
+  ServerResources resources;
 
   factory Server.fromJson(Map<String, dynamic> json) => Server(
     object: json["object"],
