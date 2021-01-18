@@ -116,101 +116,106 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
             ];
           },
           body: ListView(
-            padding: EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 0),
+            padding: EdgeInsets.only(left: 15, right: 15, top: 0, bottom: 0),
             children: [
-              Visibility(
-                  visible: showApiKeyError,
-                  child: ErrorCard(
-                      errorText: "No Panel URL or API Key found. Please set your Pterodactyl Panel URL and API Key in the settings."
-                  )
-              ),
-              FutureBuilder<ServerList>(
-                future: _serverList, // async work
-                builder: (BuildContext context, AsyncSnapshot<ServerList> snapshot) {
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.waiting: return FaIcon(FontAwesomeIcons.spinner);
-                    default:
-                      if (snapshot.hasError) {
-                        return ErrorCard(
-                            errorTitle: 'Could not load servers:',
-                            errorText: '${snapshot.error}'
-                        );
-                      } else {
-                        return Column(
-                          children: snapshot.data.data.map((server) => CustomCard(
-                              child: Padding(
-                                padding: EdgeInsets.only(top: 5),
-                                child: Row(
-                                  children: [
-                                    Padding(
-                                        padding: EdgeInsets.only(right: 15),
-                                        child: _getStatusDot(server.resources.attributes.currentState)
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        children: [
-                                          Text(server.attributes.name, textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                          Wrap(
-                                            spacing: 8,
-                                            runSpacing: 4,
+              SafeArea(child: Column(
+                children: [
+
+                  Visibility(
+                      visible: showApiKeyError,
+                      child: ErrorCard(
+                          errorText: "No Panel URL or API Key found. Please set your Pterodactyl Panel URL and API Key in the settings."
+                      )
+                  ),
+                  FutureBuilder<ServerList>(
+                    future: _serverList, // async work
+                    builder: (BuildContext context, AsyncSnapshot<ServerList> snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting: return FaIcon(FontAwesomeIcons.spinner);
+                        default:
+                          if (snapshot.hasError) {
+                            return ErrorCard(
+                                errorTitle: 'Could not load servers:',
+                                errorText: '${snapshot.error}'
+                            );
+                          } else {
+                            return Column(
+                              children: snapshot.data.data.map((server) => CustomCard(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(top: 5),
+                                    child: Row(
+                                      children: [
+                                        Padding(
+                                            padding: EdgeInsets.only(right: 15),
+                                            child: _getStatusDot(server.resources.attributes.currentState)
+                                        ),
+                                        Expanded(
+                                          child: Column(
                                             children: [
-                                              CustomCard(
-                                                child: Padding(
-                                                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              Text(server.attributes.name, textAlign: TextAlign.center, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                              Wrap(
+                                                spacing: 8,
+                                                runSpacing: 4,
+                                                children: [
+                                                  CustomCard(
+                                                    child: Padding(
+                                                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                                                      child: Column(
                                                         children: [
-                                                          FaIcon(FontAwesomeIcons.memory, size: 16),
-                                                          Padding(
-                                                            padding: EdgeInsets.only(left: 5),
-                                                            child: Text(_formatBytesString(server.resources.attributes.resources.memoryBytes.toString()) +
-                                                                "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.memory)), maxLines: 2),
+                                                          Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            children: [
+                                                              FaIcon(FontAwesomeIcons.memory, size: 16),
+                                                              Padding(
+                                                                padding: EdgeInsets.only(left: 5),
+                                                                child: Text(_formatBytesString(server.resources.attributes.resources.memoryBytes.toString()) +
+                                                                    "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.memory)), maxLines: 2),
+                                                              )
+                                                            ],
+                                                          ),
+                                                          Divider(),
+                                                          Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            children: [
+                                                              FaIcon(FontAwesomeIcons.hdd, size: 16),
+                                                              Padding(
+                                                                padding: EdgeInsets.only(left: 5),
+                                                                child: Text(_formatBytesString(server.resources.attributes.resources.diskBytes.toString()) +
+                                                                    "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.disk)), maxLines: 2),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          Divider(),
+                                                          Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            children: [
+                                                              FaIcon(FontAwesomeIcons.microchip, size: 16),
+                                                              Padding(
+                                                                padding: EdgeInsets.only(left: 5),
+                                                                child: Text(server.resources.attributes.resources.cpuAbsolute.toStringAsFixed(2) + "%", maxLines: 2),
+                                                              ),
+                                                            ],
                                                           )
                                                         ],
                                                       ),
-                                                      Divider(),
-                                                      Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                        children: [
-                                                          FaIcon(FontAwesomeIcons.hdd, size: 16),
-                                                          Padding(
-                                                            padding: EdgeInsets.only(left: 5),
-                                                            child: Text(_formatBytesString(server.resources.attributes.resources.diskBytes.toString()) +
-                                                                "/" + _formatBytesString(_megabytesToBytes(server.attributes.limits.disk)), maxLines: 2),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      Divider(),
-                                                      Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                        children: [
-                                                          FaIcon(FontAwesomeIcons.microchip, size: 16),
-                                                          Padding(
-                                                            padding: EdgeInsets.only(left: 5),
-                                                            child: Text(server.resources.attributes.resources.cpuAbsolute.toStringAsFixed(2) + "%", maxLines: 2),
-                                                          ),
-                                                        ],
-                                                      )
-                                                    ],
+                                                    ),
                                                   ),
-                                                ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              )
-                          )).toList(),
-                        );
+                                        )
+                                      ],
+                                    ),
+                                  )
+                              )).toList(),
+                            );
+                          }
                       }
-                  }
-                },
-              )
+                    },
+                  )
+                ],
+              ))
             ],
           ),
         ),
@@ -269,7 +274,6 @@ class MyDynamicHeader extends SliverPersistentHeaderDelegate {
                 ),
               ],
             ),
-            height: constraints.maxHeight,
             child: SafeArea(
                 child: Center(
                   child: Text("Servers", textAlign: TextAlign.center, style: TextStyle(fontSize: lerpDouble(20, 38, percentage))),

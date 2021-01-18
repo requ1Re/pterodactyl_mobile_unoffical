@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -54,68 +56,76 @@ class _SettingsPageState extends State<SettingsPage> {
     _selectedTheme = Theme.of(context).brightness == Brightness.light ? _themes[0]: _themes[1];
 
     return Center(
-      child: Container(
-        child: ListView(
-          padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),
+      child: NestedScrollView(
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: MyDynamicHeader(),
+            ),
+          ];
+        },
+        body: ListView(
+          padding: EdgeInsets.symmetric(horizontal: 15),
           children: [
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 50),
-              child: Text("Settings", style: TextStyle(fontSize: 38), textAlign: TextAlign.center),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 10),
-              child: Text("Pterodactyl Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
-            ),
-            buildSettingCard(FontAwesomeIcons.link, "Panel URL", TextField(
-              controller: _pterodactylUrlController,
-              textAlign: TextAlign.right,
-              onChanged: (text) async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.setString("pterodactyl_url", _pterodactylUrlController.text);
-              },
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Panel URL"
-              ),
-            )),
-            buildSettingCard(FontAwesomeIcons.key, "API Key", TextField(
-              controller: _pterodactylApiKeyController,
-              textAlign: TextAlign.right,
-              onChanged: (text) async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.setString("pterodactyl_apikey", _pterodactylApiKeyController.text);
-              },
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "API Key"
-              ),
-            )),
-            Container(
-              margin: EdgeInsets.only(top: 30, bottom: 10),
-              child: Text("App Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
-            ),
-            buildSettingCard(DynamicTheme.of(context).brightness == Brightness.light ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon, "Theme", DropdownButton(
-              isExpanded: true,
-              hint: Text('Theme'),
-              value: _selectedTheme,
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedTheme = newValue;
-                  if(newValue == _themes[0]){
-                    DynamicTheme.of(context).setBrightness(Brightness.light);
-                  }else if(newValue == _themes[1]){
-                    DynamicTheme.of(context).setBrightness(Brightness.dark);
-                  }
-                });
-              },
-              items: _themes.map((location) {
-                return DropdownMenuItem(
-                  child: new Text(location),
-                  value: location,
-                );
-              }).toList(),
-            )),
-            Text(_appVersionText, textAlign: TextAlign.center)
+            SafeArea(child: Column(
+              children: [
+                Container(
+                  margin: EdgeInsets.only(bottom: 10),
+                  child: Text("Pterodactyl Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+                ),
+                buildSettingCard(FontAwesomeIcons.link, "Panel URL", TextField(
+                  controller: _pterodactylUrlController,
+                  textAlign: TextAlign.right,
+                  onChanged: (text) async {
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.setString("pterodactyl_url", _pterodactylUrlController.text);
+                  },
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Panel URL"
+                  ),
+                )),
+                buildSettingCard(FontAwesomeIcons.key, "API Key", TextField(
+                  controller: _pterodactylApiKeyController,
+                  textAlign: TextAlign.right,
+                  onChanged: (text) async {
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.setString("pterodactyl_apikey", _pterodactylApiKeyController.text);
+                  },
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "API Key"
+                  ),
+                )),
+                Container(
+                  margin: EdgeInsets.only(top: 30, bottom: 10),
+                  child: Text("App Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+                ),
+                buildSettingCard(DynamicTheme.of(context).brightness == Brightness.light ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon, "Theme", DropdownButton(
+                  isExpanded: true,
+                  hint: Text('Theme'),
+                  value: _selectedTheme,
+                  onChanged: (newValue) {
+                    setState(() {
+                      _selectedTheme = newValue;
+                      if(newValue == _themes[0]){
+                        DynamicTheme.of(context).setBrightness(Brightness.light);
+                      }else if(newValue == _themes[1]){
+                        DynamicTheme.of(context).setBrightness(Brightness.dark);
+                      }
+                    });
+                  },
+                  items: _themes.map((location) {
+                    return DropdownMenuItem(
+                      child: new Text(location),
+                      value: location,
+                    );
+                  }).toList(),
+                )),
+                Text(_appVersionText, textAlign: TextAlign.center)
+              ],
+            ))
           ],
         ),
       ),
@@ -151,4 +161,44 @@ class _SettingsPageState extends State<SettingsPage> {
         )
     );
   }
+}
+
+class MyDynamicHeader extends SliverPersistentHeaderDelegate {
+  int index = 0;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return LayoutBuilder(
+        builder: (context, constraints) {
+          final double percentage = (constraints.maxHeight - minExtent)/(maxExtent - minExtent);
+
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).canvasColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).shadowColor.withOpacity(0.25),
+                  spreadRadius: 3 * (1 - percentage),
+                  blurRadius: 6 * (1 - percentage),
+                ),
+              ],
+            ),
+            child: SafeArea(
+                child: Center(
+                  child: Text("Settings", textAlign: TextAlign.center, style: TextStyle(fontSize: lerpDouble(20, 38, percentage))),
+                )
+            ),
+          );
+        }
+    );
+  }
+
+  @override
+  bool shouldRebuild(SliverPersistentHeaderDelegate _) => true;
+
+  @override
+  double get maxExtent => 200.0;
+
+  @override
+  double get minExtent => 100.0;
 }
