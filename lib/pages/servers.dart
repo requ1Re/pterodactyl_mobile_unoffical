@@ -13,13 +13,17 @@ class _ServersPageState extends State<ServersPage> {
   bool showApiKeyError = false;
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
         showApiKeyError = prefs.getString("pterodactyl_apikey") == null || prefs.getString("pterodactyl_apikey") == "";
       });
     });
+    super.initState();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),

@@ -21,12 +21,19 @@ class _SettingsPageState extends State<SettingsPage> {
   final _pterodactylUrlController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
-    _selectedTheme = Theme.of(context).brightness == Brightness.light ? _themes[0]: _themes[1];
-
+  void initState() {
     SharedPreferences.getInstance().then((prefs) {
-      _pterodactylApiKeyController.text = prefs.getString("pterodactyl_apikey") ?? "";
-      _pterodactylUrlController.text = prefs.getString("pterodactyl_url") ?? "";
+      String apikey = prefs.getString("pterodactyl_apikey") ?? "";
+      _pterodactylApiKeyController.value = TextEditingValue(
+        text: apikey,
+        selection: TextSelection.collapsed(offset: apikey.length),
+      );
+
+      String url = prefs.getString("pterodactyl_url") ?? "";
+      _pterodactylUrlController.value = TextEditingValue(
+        text: url,
+        selection: TextSelection.collapsed(offset: url.length),
+      );
     });
 
     PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
@@ -38,6 +45,13 @@ class _SettingsPageState extends State<SettingsPage> {
         _appVersionText = appName + " v" + version + " (Build " + buildNumber + ")";
       });
     });
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _selectedTheme = Theme.of(context).brightness == Brightness.light ? _themes[0]: _themes[1];
 
     return Center(
       child: Container(
@@ -111,6 +125,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void dispose() {
     _pterodactylApiKeyController.dispose();
+    _pterodactylUrlController.dispose();
     super.dispose();
   }
 
