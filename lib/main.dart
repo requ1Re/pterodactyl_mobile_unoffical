@@ -81,10 +81,6 @@ class _PterodactylMobileHomePageState extends State<PterodactylMobileHomePage> {
             selectedItemColor: Theme.of(context).colorScheme.primary,
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
-                icon: FaIcon(FontAwesomeIcons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
                 icon: FaIcon(FontAwesomeIcons.server),
                 label: 'Servers',
               ),
@@ -104,7 +100,6 @@ class _PterodactylMobileHomePageState extends State<PterodactylMobileHomePage> {
           });
         },
         children: [
-          HomePage(),
           ServersPage(),
           SettingsPage()
         ],

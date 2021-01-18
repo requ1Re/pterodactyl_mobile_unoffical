@@ -272,7 +272,7 @@ class MyDynamicHeader extends SliverPersistentHeaderDelegate {
             height: constraints.maxHeight,
             child: SafeArea(
                 child: Center(
-                  child: Text("Servers", textAlign: TextAlign.center, style: TextStyle(fontSize: 38)),
+                  child: Text("Servers", textAlign: TextAlign.center, style: TextStyle(fontSize: lerpDouble(20, 38, percentage))),
                 )
             ),
           );
