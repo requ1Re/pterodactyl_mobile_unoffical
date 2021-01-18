@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:pterodactyl_mobile/pages/servers.dart';
 import 'package:pterodactyl_mobile/pages/settings.dart';
 
 void main() {
@@ -49,7 +50,7 @@ class _PterodactylMobileHomePageState extends State<PterodactylMobileHomePage> {
   int _selectedIndex = 0;
   final List<Widget> _children = [
     Text('1'),
-    Text('2'),
+    ServersPage(),
     SettingsPage(),
   ];
 

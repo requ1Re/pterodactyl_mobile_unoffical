@@ -14,14 +14,16 @@ class _SettingsPageState extends State<SettingsPage> {
   List<String> _themes = ['Light', 'Dark'];
   String _selectedTheme;
 
-  final _apiKeyController = TextEditingController();
+  final _pterodactylApiKeyController = TextEditingController();
+  final _pterodactylUrlController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     _selectedTheme = Theme.of(context).brightness == Brightness.light ? _themes[0]: _themes[1];
 
     SharedPreferences.getInstance().then((prefs) {
-      _apiKeyController.text = prefs.getString("pterodactyl_apikey") ?? "";
+      _pterodactylApiKeyController.text = prefs.getString("pterodactyl_apikey") ?? "";
+      _pterodactylUrlController.text = prefs.getString("pterodactyl_url") ?? "";
     });
 
     return Center(
@@ -63,12 +65,24 @@ class _SettingsPageState extends State<SettingsPage> {
                 margin: EdgeInsets.only(top: 30, bottom: 10),
                 child: Text("Pterodactyl Settings", style: TextStyle(fontSize: 24)),
               ),
-              buildSettingCard(FontAwesomeIcons.key, "API Key", TextField(
-                controller: _apiKeyController,
+              buildSettingCard(FontAwesomeIcons.link, "Panel URL", TextField(
+                controller: _pterodactylUrlController,
                 textAlign: TextAlign.right,
                 onChanged: (text) async {
                   SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.setString("pterodactyl_apikey", _apiKeyController.text);
+                  await prefs.setString("pterodactyl_url", _pterodactylUrlController.text);
+                },
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Panel URL"
+                ),
+              )),
+              buildSettingCard(FontAwesomeIcons.key, "API Key", TextField(
+                controller: _pterodactylApiKeyController,
+                textAlign: TextAlign.right,
+                onChanged: (text) async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.setString("pterodactyl_apikey", _pterodactylApiKeyController.text);
                 },
                 decoration: InputDecoration(
                     border: InputBorder.none,
@@ -84,7 +98,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   void dispose() {
-    _apiKeyController.dispose();
+    _pterodactylApiKeyController.dispose();
     super.dispose();
   }
 
