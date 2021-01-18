@@ -48,24 +48,20 @@ class PterodactylMobileHomePage extends StatefulWidget {
 }
 
 class _PterodactylMobileHomePageState extends State<PterodactylMobileHomePage> {
-  int _selectedIndex = 0;
-  final List<Widget> _children = [
-    HomePage(),
-    ServersPage(),
-    SettingsPage(),
-  ];
+  int _page = 0;
+  PageController _c;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  @override
+  void initState(){
+    _c =  new PageController(
+      initialPage: _page,
+    );
+    super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _children[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -77,24 +73,40 @@ class _PterodactylMobileHomePageState extends State<PterodactylMobileHomePage> {
           ],
         ),
         child: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: FaIcon(FontAwesomeIcons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: FaIcon(FontAwesomeIcons.server),
-              label: 'Servers',
-            ),
-            BottomNavigationBarItem(
-              icon: FaIcon(FontAwesomeIcons.cog),
-              label: 'Settings',
-            ),
-          ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Theme.of(context).colorScheme.primary,
-          onTap: _onItemTapped,
+            currentIndex: _page,
+            onTap: (index){
+              this._c.animateToPage(index, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+            },
+            selectedItemColor: Theme.of(context).colorScheme.primary,
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: FaIcon(FontAwesomeIcons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: FaIcon(FontAwesomeIcons.server),
+                label: 'Servers',
+              ),
+              BottomNavigationBarItem(
+                icon: FaIcon(FontAwesomeIcons.cog),
+                label: 'Settings',
+              ),
+            ],
         ),
+      ),
+      body: PageView(
+        controller: _c,
+        onPageChanged: (newPage) {
+          setState(() {
+            this._page = newPage;
+            FocusScope.of(context).unfocus();
+          });
+        },
+        children: [
+          HomePage(),
+          ServersPage(),
+          SettingsPage()
+        ],
       ),
     );
   }
