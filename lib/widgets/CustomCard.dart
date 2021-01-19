@@ -12,7 +12,7 @@ class CustomCard extends StatelessWidget {
     if(_backgroundColor == null) _backgroundColor = Theme.of(context).cardColor;
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: EdgeInsets.only(top: 10),
       decoration: BoxDecoration(
         color: _backgroundColor,
         borderRadius: BorderRadius.circular(20.0),
