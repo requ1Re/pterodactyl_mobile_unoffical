@@ -25,9 +25,9 @@ class ErrorCard extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
         child: ListTile(
-            title: Text(errorTitle, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            subtitle: Text(errorText, style: TextStyle(color: Colors.white)),
-            leading: FaIcon(FontAwesomeIcons.exclamationTriangle, color: Colors.white)
+          title: Text(errorTitle, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          subtitle: Text(errorText, style: TextStyle(color: Colors.white)),
+          leading: FaIcon(FontAwesomeIcons.exclamationTriangle, color: Colors.white)
         ),
       ),
     );

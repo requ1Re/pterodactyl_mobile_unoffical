@@ -45,12 +45,7 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
       }
       return serverList;
     } else {
-      switch(response.statusCode){
-        case 404:
-          throw Exception('404 Not Found - Please check your Pterodactyl Panel URL in the settings.');
-        default:
-          throw Exception('Server responded with ${response.statusCode}');
-      }
+      throw Exception('Server responded with Status Code ${response.statusCode}');
     }
   }
 
@@ -83,11 +78,6 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
 
   @override
   void initState() {
-    SharedPreferences.getInstance().then((prefs) {
-      setState(() {
-        showApiKeyError = prefs.getString("pterodactyl_apikey") == null || prefs.getString("pterodactyl_url") == "";
-      });
-    });
     _serverList = fetchServerList();
     super.initState();
   }
@@ -119,12 +109,6 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
         collapsedTitle: Text('Servers', style: TextStyle(fontSize: 24)),
         childrenPadding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
         children: [
-          Visibility(
-              visible: showApiKeyError,
-              child: ErrorCard(
-                  errorText: "No Panel URL or API Key found. Please set your Pterodactyl Panel URL and API Key in the settings."
-              )
-          ),
           FutureBuilder<ServerList>(
             future: _serverList, // async work
             builder: _serverCardsFutureBuilder,
@@ -147,8 +131,8 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
       default:
         if (snapshot.hasError) {
           return ErrorCard(
-              errorTitle: 'Could not load servers:',
-              errorText: '${snapshot.error}'
+              errorTitle: 'Error while loading servers:',
+              errorText: _getFetchErrorText(snapshot.error.toString())
           );
         } else {
           return Column(
@@ -243,6 +227,18 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
         return FaIcon(FontAwesomeIcons.solidCircle, color: Colors.green);
       default:
         return FaIcon(FontAwesomeIcons.questionCircle, color: Colors.yellow);
+    }
+  }
+
+  String _getFetchErrorText(String errorText){
+    if(errorText.contains("Server responded with Status Code 401")){
+      return errorText + " (Unauthorized) This probably means your API Key is invalid.";
+    }else if(errorText.contains("Server responded with Status Code 403")){
+      return errorText + " (Forbidden)";
+    }else if(errorText.contains("Server responded with Status Code 404")){
+      return errorText + " (Not Found) This probably means your Panel URL is invalid. Make sure to remove any trailing slashes from the URL.";
+    }else{
+      return errorText;
     }
   }
 
