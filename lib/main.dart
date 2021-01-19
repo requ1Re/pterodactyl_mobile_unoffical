@@ -1,30 +1,48 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:pterodactyl_mobile/pages/servers.dart';
 import 'package:pterodactyl_mobile/pages/settings.dart';
+import 'package:easy_dynamic_theme/easy_dynamic_theme.dart';
 
 void main() {
-  runApp(PterodactylMobile());
+  runApp(
+      EasyDynamicThemeWidget(
+        child: PterodactylMobile(),
+      )
+  );
+}
+
+class ThemeNotifier with ChangeNotifier {
+  ThemeData _themeData;
+
+  ThemeNotifier(this._themeData);
+
+  getTheme() => _themeData;
+
+  setTheme(ThemeData themeData) async {
+    _themeData = themeData;
+    notifyListeners();
+  }
 }
 
 class PterodactylMobile extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return new DynamicTheme(
-        defaultBrightness: Brightness.dark,
-        data: (brightness) => new ThemeData(
-          brightness: brightness,
-        ),
-        themedWidgetBuilder: (context, theme) {
-          return new MaterialApp(
-            title: 'Pterodactyl App Control',
-            theme: theme,
-            home: PterodactylMobileHomePage(title: 'Pterodactyl App Control'),
-          );
-        }
+    ThemeData customDark = ThemeData.dark().copyWith(
+      canvasColor: Colors.black,
+      backgroundColor: Colors.black,
+      scaffoldBackgroundColor: Colors.black,
+      cardColor: Color.fromRGBO(33, 33, 33, 1),
+      shadowColor: Color.fromRGBO(20, 20, 20, 1)
+    );
+
+    return MaterialApp(
+      title: 'Pterodactyl App Control',
+      theme: ThemeData.light(),
+      darkTheme: customDark,
+      themeMode: EasyDynamicTheme.of(context).themeMode,
+      home: PterodactylMobileHomePage(title: 'Pterodactyl App Control'),
     );
   }
 }

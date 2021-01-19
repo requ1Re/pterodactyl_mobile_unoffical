@@ -1,9 +1,9 @@
 import 'dart:ui';
 
+import 'package:easy_dynamic_theme/easy_dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:package_info/package_info.dart';
 import 'package:pterodactyl_mobile/one_ui_scroll_view/one_ui_scroll_view.dart';
 import 'package:pterodactyl_mobile/widgets/CustomCard.dart';
@@ -15,7 +15,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  List<String> _themes = ['Light', 'Dark'];
+  List<String> _themes = ['Light', 'Dark', 'System'];
   String _selectedTheme;
 
   String _appVersionText = "";
@@ -54,7 +54,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    _selectedTheme = Theme.of(context).brightness == Brightness.light ? _themes[0]: _themes[1];
+    ThemeMode themeMode = EasyDynamicTheme.of(context).themeMode;
+    switch(themeMode){
+      case ThemeMode.light:
+        _selectedTheme = "Light";
+        break;
+
+      case ThemeMode.dark:
+        _selectedTheme = "Dark";
+        break;
+
+      case ThemeMode.system:
+        _selectedTheme = "System";
+        break;
+    }
 
     return Center(
       child: OneUiScrollView(
@@ -103,19 +116,21 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Text("App Settings", style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
           ),
           Text(_appVersionText, textAlign: TextAlign.center),
-          buildSettingCard(DynamicTheme.of(context).brightness == Brightness.light ? FontAwesomeIcons.solidSun : FontAwesomeIcons.solidMoon, "Theme", DropdownButton(
+          buildSettingCard(FontAwesomeIcons.solidSun, "Theme", DropdownButton(
             isExpanded: true,
             hint: Text('Theme'),
             value: _selectedTheme,
             onChanged: (newValue) {
               setState(() {
                 _selectedTheme = newValue;
-                if(newValue == _themes[0]){
-                  DynamicTheme.of(context).setBrightness(Brightness.light);
-                }else if(newValue == _themes[1]){
-                  DynamicTheme.of(context).setBrightness(Brightness.dark);
-                }
               });
+              if(newValue == _themes[0]){
+                EasyDynamicTheme.of(context).changeTheme(dynamic: false, dark: false);
+              }else if(newValue == _themes[1]){
+                EasyDynamicTheme.of(context).changeTheme(dynamic: false, dark: true);
+              }else if(newValue == _themes[2]){
+                EasyDynamicTheme.of(context).changeTheme(dynamic: true);
+              }
             },
             items: _themes.map((location) {
               return DropdownMenuItem(
