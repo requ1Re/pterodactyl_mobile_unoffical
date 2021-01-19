@@ -136,7 +136,14 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
 
   Widget _serverCardsFutureBuilder(BuildContext context, AsyncSnapshot<ServerList> snapshot){
     switch (snapshot.connectionState) {
-      case ConnectionState.waiting: return FaIcon(FontAwesomeIcons.spinner);
+      case ConnectionState.waiting:
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: CircularProgressIndicator(),
+          ),
+        );
+
       default:
         if (snapshot.hasError) {
           return ErrorCard(
