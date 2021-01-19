@@ -106,7 +106,15 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
         ),
         backgroundColor: Theme.of(context).canvasColor,
         expandedTitle: Text('Servers', style: TextStyle(fontSize: 32)),
-        collapsedTitle: Text('Servers', style: TextStyle(fontSize: 24)),
+        collapsedTitle: Row(
+          children: [
+            FaIcon(FontAwesomeIcons.server),
+            Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Text('Servers', style: TextStyle(fontSize: 24)),
+            )
+          ],
+        ),
         childrenPadding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
         children: [
           FutureBuilder<ServerList>(
@@ -177,7 +185,7 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            FaIcon(FontAwesomeIcons.hdd, size: 16),
+                                            FaIcon(FontAwesomeIcons.solidHdd, size: 16),
                                             Padding(
                                               padding: EdgeInsets.only(left: 5),
                                               child: Text(_formatBytesString(server.resources.attributes.resources.diskBytes.toString()) +
@@ -220,13 +228,13 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
   Widget _getStatusDot(String status){
     switch(status){
       case "offline":
-        return FaIcon(FontAwesomeIcons.circle, color: Colors.red);
+        return FaIcon(FontAwesomeIcons.solidCircle, color: Colors.red, size: 18);
       case "starting":
-        return FaIcon(FontAwesomeIcons.circle, color: Colors.yellow);
+        return FaIcon(FontAwesomeIcons.circle, color: Colors.yellow, size: 18);
       case "running":
-        return FaIcon(FontAwesomeIcons.solidCircle, color: Colors.green);
+        return FaIcon(FontAwesomeIcons.solidCircle, color: Colors.green, size: 18);
       default:
-        return FaIcon(FontAwesomeIcons.questionCircle, color: Colors.yellow);
+        return FaIcon(FontAwesomeIcons.questionCircle, color: Colors.yellow, size: 18);
     }
   }
 

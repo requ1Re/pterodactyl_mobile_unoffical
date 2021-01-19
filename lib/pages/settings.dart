@@ -80,7 +80,15 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         backgroundColor: Theme.of(context).canvasColor,
         expandedTitle: Text('Settings', style: TextStyle(fontSize: 32)),
-        collapsedTitle: Text('Settings', style: TextStyle(fontSize: 24)),
+        collapsedTitle: Row(
+          children: [
+            FaIcon(FontAwesomeIcons.cog),
+            Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Text('Settings', style: TextStyle(fontSize: 24)),
+            )
+          ],
+        ),
         childrenPadding: EdgeInsets.all(10),
         children: [
           Container(
