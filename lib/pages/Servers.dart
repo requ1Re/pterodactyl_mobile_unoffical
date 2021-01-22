@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pterodactyl_mobile/models/ServerList.dart';
 import 'package:pterodactyl_mobile/models/ServerResources.dart';
 import 'package:pterodactyl_mobile/one_ui_scroll_view/one_ui_scroll_view.dart';
+import 'package:pterodactyl_mobile/pages/ServerDetails.dart';
 import 'package:pterodactyl_mobile/widgets/CustomCard.dart';
 import 'package:pterodactyl_mobile/widgets/ErrorCard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -145,7 +146,10 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
         } else {
           return Column(
             children: snapshot.data.data.map((server) => CustomCard(
-                child: Padding(
+              onTap: () {
+                _navigateToScreen(ServerDetails(serverIdentifier: server.attributes.identifier));
+              },
+              child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 5),
                   child: Row(
                     children: [
@@ -262,6 +266,13 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
     }else{
       return _megabytes.toStringAsFixed(2) + " MB";
     }
+  }
+
+  void _navigateToScreen(Widget screen){
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => screen),
+    );
   }
 
   @override

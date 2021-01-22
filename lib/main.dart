@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:pterodactyl_mobile/pages/servers.dart';
-import 'package:pterodactyl_mobile/pages/settings.dart';
+import 'package:pterodactyl_mobile/pages/Servers.dart';
+import 'package:pterodactyl_mobile/pages/Settings.dart';
 import 'package:easy_dynamic_theme/easy_dynamic_theme.dart';
 
 void main() {

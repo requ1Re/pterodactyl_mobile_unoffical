@@ -154,6 +154,7 @@ class _OneUiScrollViewState extends State<OneUiScrollView>
       SliverOverlapAbsorber(
         handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
         sliver: SliverAppBar(
+          leading: new Container(),
           backgroundColor: widget.backgroundColor,
           pinned: true,
           expandedHeight: _expandedHeight,
