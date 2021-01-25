@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pterodactyl_mobile/helpers/PterodactylHelper.dart';
+import 'package:pterodactyl_mobile/helpers/PterodactylWebSocketHelper.dart';
 import 'package:pterodactyl_mobile/models/PterodactylEvent.dart';
 import 'package:pterodactyl_mobile/models/ServerList.dart';
 import 'package:pterodactyl_mobile/models/ServerResources.dart';
@@ -14,6 +16,8 @@ import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
+import 'ServerConsole.dart';
+
 class ServerDetails extends StatefulWidget {
   final String serverIdentifier;
 
@@ -24,107 +28,6 @@ class ServerDetails extends StatefulWidget {
 }
 
 class _ServerDetailsState extends State<ServerDetails> {
-
-  Future<Server> fetchServer(String uid) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String _pterodactylApiKey = prefs.getString("pterodactyl_apikey") ?? "";
-    String _pterodactylUrl = prefs.getString("pterodactyl_url") ?? "";
-
-
-    final response = await http.get(
-      _pterodactylUrl + '/api/client/servers/' + uid,
-      headers: {
-        "Authorization": "Bearer " + _pterodactylApiKey,
-        "Accept": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-      final responseJson = jsonDecode(response.body);
-      Server s = Server.fromJson(responseJson);
-      s.resources = await fetchServerResources(s.attributes.identifier);
-      return s;
-    } else {
-      switch(response.statusCode){
-        case 404:
-          throw Exception('404 Not Found - Please check your Pterodactyl Panel URL in the settings.');
-        default:
-          throw Exception('Server responded with ${response.statusCode}');
-      }
-    }
-  }
-
-
-  Future<ServerResources> fetchServerResources(String uid) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String _pterodactylApiKey = prefs.getString("pterodactyl_apikey") ?? "";
-    String _pterodactylUrl = prefs.getString("pterodactyl_url") ?? "";
-
-
-    final response = await http.get(
-      _pterodactylUrl + '/api/client/servers/' + uid + '/resources',
-      headers: {
-        "Authorization": "Bearer " + _pterodactylApiKey,
-        "Accept": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-      final responseJson = jsonDecode(response.body);
-      return ServerResources.fromJson(responseJson);
-    } else {
-      switch(response.statusCode){
-        case 404:
-          throw Exception('404 Not Found - Please check your Pterodactyl Panel URL in the settings.');
-        default:
-          throw Exception('Server responded with ${response.statusCode}');
-      }
-    }
-  }
-
-  void _getNewPanelWebSocketToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String _pterodactylApiKey = prefs.getString("pterodactyl_apikey") ?? "";
-    String _pterodactylUrl = prefs.getString("pterodactyl_url") ?? "";
-
-    final response = await http.get(
-      _pterodactylUrl + '/api/client/servers/' + widget.serverIdentifier + '/websocket',
-      headers: {
-        "Authorization": "Bearer " + _pterodactylApiKey,
-        "Accept": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-      final responseJson = jsonDecode(response.body);
-      _serverWebSocket.sink.add('{"event":"auth","args":["' + responseJson["data"]["token"] + '"]}');
-    } else {
-      throw Exception('Could not renew WebSocket token');
-    }
-  }
-
-  void _establishWebSocketConnection() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String _pterodactylApiKey = prefs.getString("pterodactyl_apikey") ?? "";
-    String _pterodactylUrl = prefs.getString("pterodactyl_url") ?? "";
-
-    final response = await http.get(
-      _pterodactylUrl + '/api/client/servers/' + widget.serverIdentifier + '/websocket',
-      headers: {
-        "Authorization": "Bearer " + _pterodactylApiKey,
-        "Accept": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-      final responseJson = jsonDecode(response.body);
-
-      _serverWebSocket = IOWebSocketChannel.connect(responseJson["data"]["socket"]);
-      _serverWebSocket.sink.add('{"event":"auth","args":["' + responseJson["data"]["token"] + '"]}');
-      _serverWebSocket.stream.listen((message){
-        _webSocketListener(message);
-      });
-
-    } else {
-      throw Exception('Could not connect to WebSocket');
-    }
-  }
 
   void _webSocketListener(String message){
     PterodactylWebSocketEvent event = pterodactylWebSocketEventFromJson(message);
@@ -156,7 +59,9 @@ class _ServerDetailsState extends State<ServerDetails> {
       }
 
       case 'token expiring':
-        _getNewPanelWebSocketToken();
+        PterodactylWebSocketHelper.getWebSocketInfo(widget.serverIdentifier).then((webSocketInfo){
+          _serverWebSocket.sink.add('{"event":"auth","args":["' + webSocketInfo.token + '"]}');
+        });
         break;
 
       default: {
@@ -189,7 +94,7 @@ class _ServerDetailsState extends State<ServerDetails> {
 
   @override
   void initState() {
-    fetchServer(widget.serverIdentifier).then((server){
+    PterodactylHelper.fetchServer(widget.serverIdentifier).then((server){
       setState(() {
         _server = server;
 
@@ -207,7 +112,12 @@ class _ServerDetailsState extends State<ServerDetails> {
     });
 
     runZoned(() async {
-      _establishWebSocketConnection();
+      PterodactylWebSocketHelper.establishWebSocketConnection(widget.serverIdentifier).then((wsc){
+        _serverWebSocket = wsc;
+        _serverWebSocket.stream.listen((message){
+          _webSocketListener(message);
+        });
+      });
     }, onError: (error, stackTrace) {
       setState(() {
         _serverWebSocketError = error.toString();
@@ -408,38 +318,44 @@ class _ServerDetailsState extends State<ServerDetails> {
             Visibility(
               visible: _serverWebSocketError.length == 0,
               child: CustomCard(
+                onTap: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ServerConsole(serverIdentifier: widget.serverIdentifier)),
+                  );
+                },
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        reverse: true,
-                        controller: _scrollController,
-                        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                        itemCount: _serverLog.length,
-                        itemBuilder: (context, index) {
-                          return Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('${List.from(_serverLog.reversed)[index]}', style: TextStyle(fontSize: 12)),
-                              Divider()
-                            ],
-                          );
-                        },
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 200,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          reverse: true,
+                          controller: _scrollController,
+                          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                          itemCount: _serverLog.length,
+                          itemBuilder: (context, index) {
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('${List.from(_serverLog.reversed)[index]}', style: TextStyle(fontSize: 12)),
+                                Divider()
+                              ],
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
 
-                      ],
-                    )
-                  ],
-                ),
+                        ],
+                      )
+                    ],
+                  ),
               ),
             ),
           ],

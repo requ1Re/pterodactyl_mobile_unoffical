@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pterodactyl_mobile/helpers/PterodactylHelper.dart';
 import 'package:pterodactyl_mobile/models/ServerList.dart';
 import 'package:pterodactyl_mobile/models/ServerResources.dart';
 import 'package:pterodactyl_mobile/one_ui_scroll_view/one_ui_scroll_view.dart';
@@ -25,61 +26,11 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
 
 
   Future<ServerList> _serverList;
-  Future<ServerList> fetchServerList() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String _pterodactylApiKey = prefs.getString("pterodactyl_apikey") ?? "";
-    String _pterodactylUrl = prefs.getString("pterodactyl_url") ?? "";
-
-
-    final response = await http.get(
-      _pterodactylUrl + '/api/client',
-      headers: {
-        "Authorization": "Bearer " + _pterodactylApiKey,
-        "Accept": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-      final responseJson = jsonDecode(response.body);
-      ServerList serverList = ServerList.fromJson(responseJson);
-      for(Server s in serverList.data){
-        s.resources = await fetchServerResources(s.attributes.identifier);
-      }
-      return serverList;
-    } else {
-      throw Exception('Server responded with Status Code ${response.statusCode}');
-    }
-  }
-
-  Future<ServerResources> fetchServerResources(String uid) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String _pterodactylApiKey = prefs.getString("pterodactyl_apikey") ?? "";
-    String _pterodactylUrl = prefs.getString("pterodactyl_url") ?? "";
-
-
-    final response = await http.get(
-      _pterodactylUrl + '/api/client/servers/' + uid + '/resources',
-      headers: {
-        "Authorization": "Bearer " + _pterodactylApiKey,
-        "Accept": "application/json",
-      },
-    );
-    if (response.statusCode == 200) {
-      final responseJson = jsonDecode(response.body);
-      return ServerResources.fromJson(responseJson);
-    } else {
-      switch(response.statusCode){
-        case 404:
-          throw Exception('404 Not Found - Please check your Pterodactyl Panel URL in the settings.');
-        default:
-          throw Exception('Server responded with ${response.statusCode}');
-      }
-    }
-  }
 
 
   @override
   void initState() {
-    _serverList = fetchServerList();
+    _serverList = PterodactylHelper.fetchServerList();
     super.initState();
   }
 
@@ -91,7 +42,7 @@ class _ServersPageState extends State<ServersPage> with AutomaticKeepAliveClient
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
-            _serverList = fetchServerList();
+            _serverList = PterodactylHelper.fetchServerList();
           });
         },
         child: Icon(Icons.refresh),
