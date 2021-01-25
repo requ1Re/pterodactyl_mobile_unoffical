@@ -6,13 +6,9 @@ import 'package:pterodactyl_mobile/helpers/PterodactylHelper.dart';
 import 'package:pterodactyl_mobile/helpers/PterodactylWebSocketHelper.dart';
 import 'package:pterodactyl_mobile/models/PterodactylEvent.dart';
 import 'package:pterodactyl_mobile/models/ServerList.dart';
-import 'package:pterodactyl_mobile/models/ServerResources.dart';
 import 'package:pterodactyl_mobile/one_ui_scroll_view/one_ui_scroll_view.dart';
 import 'package:pterodactyl_mobile/widgets/CustomCard.dart';
 import 'package:pterodactyl_mobile/widgets/ErrorCard.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 

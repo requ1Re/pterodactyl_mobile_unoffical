@@ -1,18 +1,13 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pterodactyl_mobile/helpers/PterodactylHelper.dart';
 import 'package:pterodactyl_mobile/models/ServerList.dart';
-import 'package:pterodactyl_mobile/models/ServerResources.dart';
 import 'package:pterodactyl_mobile/one_ui_scroll_view/one_ui_scroll_view.dart';
 import 'package:pterodactyl_mobile/pages/ServerDetails.dart';
 import 'package:pterodactyl_mobile/widgets/CustomCard.dart';
 import 'package:pterodactyl_mobile/widgets/ErrorCard.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 class ServersPage extends StatefulWidget {
   @override
