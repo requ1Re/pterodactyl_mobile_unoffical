@@ -92,6 +92,16 @@ class _ServerConsoleState extends State<ServerConsole> {
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          _scrollController.animateTo(
+            0.0,
+            curve: Curves.easeOut,
+            duration: const Duration(milliseconds: 1000),
+          );
+        },
+        child: Icon(Icons.arrow_downward_rounded),
+      ),
     );
   }
 }
